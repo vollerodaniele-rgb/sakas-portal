@@ -1,0 +1,52 @@
+{
+  "tagline": "Monthly reels and photography for Sakas, Gent. Everything about our collaboration in one place: planning, deliveries, documents and billing.",
+  "dealNotes": "What we deliver every month, agreed August 2026. Adjust anytime, this page always shows the current agreement.",
+  "deal": [
+    { "num": "4", "label": "Reels per month" },
+    { "num": "12", "label": "Photos per month" },
+    { "num": "1", "label": "Shoot day per month" },
+    { "num": "48h", "label": "Delivery after shoot" }
+  ],
+  "nextShoot": {
+    "date": "2026-09-05",
+    "time": "14:00",
+    "location": "Sakas, Gent",
+    "focus": "September menu: 2 dish reels, 1 atmosphere reel, 1 team reel + photo set",
+    "checklist": ["Menu highlights chosen", "Staff availability confirmed", "Tables by the window reserved", "Specials list sent to us"]
+  },
+  "months": [
+    {
+      "label": "September 2026",
+      "status": "active",
+      "reels": { "done": 0, "total": 4 },
+      "photos": { "done": 0, "total": 12 },
+      "notes": "First month of the partnership. Focus: introducing the kitchen and the team."
+    },
+    {
+      "label": "October 2026",
+      "status": "planned",
+      "reels": { "done": 0, "total": 4 },
+      "photos": { "done": 0, "total": 12 },
+      "notes": "Autumn menu launch content."
+    },
+    {
+      "label": "November 2026",
+      "status": "planned",
+      "reels": { "done": 0, "total": 4 },
+      "photos": { "done": 0, "total": 12 },
+      "notes": "Holiday season teasers and gift card push."
+    }
+  ],
+  "documents": [
+    { "type": "Contract", "title": "Collaboration agreement", "note": "Signed August 2026", "url": "" },
+    { "type": "Brief", "title": "Content style guide", "note": "Tone, colors, do's and don'ts", "url": "" },
+    { "type": "Delivery", "title": "September content package", "note": "Available after the shoot", "url": "" }
+  ],
+  "invoices": [
+    { "number": "2026-SAK-001", "period": "September 2026", "issued": "2026-09-30", "status": "upcoming", "url": "" }
+  ],
+  "contact": {
+    "line": "SAKAS x NOIR AU NOIR",
+    "email": "vollerodaniele@gmail.com"
+  }
+}
