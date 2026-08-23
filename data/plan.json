@@ -1,39 +1,49 @@
-{
+﻿{
   "tagline": "Monthly reels and photography for Sakas, Gent. Everything about our collaboration in one place: planning, deliveries, documents and billing.",
   "dealNotes": "What we deliver every month, agreed August 2026. Adjust anytime, this page always shows the current agreement.",
   "deal": [
-    { "num": "4", "label": "Reels per month" },
-    { "num": "12", "label": "Photos per month" },
+    { "num": "12", "label": "Reels per month" },
+    { "num": "10-20", "label": "Photos per month" },
     { "num": "1", "label": "Shoot day per month" },
-    { "num": "48h", "label": "Delivery after shoot" }
+    { "num": "1 week", "label": "Delivery after shoot" }
   ],
   "nextShoot": {
     "date": "2026-09-05",
     "time": "14:00",
     "location": "Sakas, Gent",
-    "focus": "September menu: 2 dish reels, 1 atmosphere reel, 1 team reel + photo set",
+    "focus": "First shoot of the partnership",
     "checklist": ["Menu highlights chosen", "Staff availability confirmed", "Tables by the window reserved", "Specials list sent to us"]
+  },
+  "filmPlan": {
+    "month": "September 2026",
+    "items": [
+      { "what": "Signature dish reel", "note": "Close-up plating of the chef's signature dish, kitchen to table" },
+      { "what": "Kitchen action reel", "note": "Fast cuts of the team during service, fire and movement" },
+      { "what": "Atmosphere reel", "note": "Golden hour interior, guests, details of the room" },
+      { "what": "Team introduction reel", "note": "Short portraits of the chef and the crew" },
+      { "what": "Photo set", "note": "Dishes, interior and team photos for socials and the website" }
+    ]
   },
   "months": [
     {
       "label": "September 2026",
       "status": "active",
-      "reels": { "done": 0, "total": 4 },
-      "photos": { "done": 0, "total": 12 },
+      "reels": { "done": 0, "total": 12 },
+      "photos": { "done": 0, "total": 20 },
       "notes": "First month of the partnership. Focus: introducing the kitchen and the team."
     },
     {
       "label": "October 2026",
       "status": "planned",
-      "reels": { "done": 0, "total": 4 },
-      "photos": { "done": 0, "total": 12 },
+      "reels": { "done": 0, "total": 12 },
+      "photos": { "done": 0, "total": 20 },
       "notes": "Autumn menu launch content."
     },
     {
       "label": "November 2026",
       "status": "planned",
-      "reels": { "done": 0, "total": 4 },
-      "photos": { "done": 0, "total": 12 },
+      "reels": { "done": 0, "total": 12 },
+      "photos": { "done": 0, "total": 20 },
       "notes": "Holiday season teasers and gift card push."
     }
   ],
@@ -47,6 +57,6 @@
   ],
   "contact": {
     "line": "SAKAS x NOIR AU NOIR",
-    "email": "vollerodaniele@gmail.com"
+    "email": "info@noiraunoir.com"
   }
 }

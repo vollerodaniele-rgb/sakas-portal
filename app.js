@@ -28,6 +28,7 @@ async function loadPlan() {
 
   renderDeal(data.deal || []);
   renderShoot(data.nextShoot);
+  renderFilmPlan(data.filmPlan);
   renderMonths(data.months || []);
   renderDocs(data.documents || []);
   renderInvoices(data.invoices || []);
@@ -80,6 +81,29 @@ function renderShoot(shoot) {
       ? `<div class="shoot-checklist">${shoot.checklist.map((c) => `<span>${esc(c)}</span>`).join("")}</div>`
       : ""}
   `;
+}
+
+function renderFilmPlan(plan) {
+  const list = $("plan-list");
+  list.innerHTML = "";
+  if (!plan || !plan.items || !plan.items.length) {
+    list.innerHTML = `<li><span class="plan-what muted">Shot list for the next shoot lands here soon.</span></li>`;
+    return;
+  }
+  if (plan.month) {
+    $("filmplan-title").textContent = "What We Film: " + plan.month;
+  }
+  plan.items.forEach((item, i) => {
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <span class="plan-num">${String(i + 1).padStart(2, "0")}</span>
+      <span>
+        <span class="plan-what">${esc(item.what)}</span>
+        ${item.note ? `<div class="plan-note">${esc(item.note)}</div>` : ""}
+      </span>
+    `;
+    list.appendChild(li);
+  });
 }
 
 function renderMonths(months) {
