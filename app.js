@@ -54,35 +54,21 @@ async function loadRequests() {
   const grid = $("request-grid");
   const status = $("request-status");
   try {
-    const url = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/issues` +
-      `?labels=${encodeURIComponent(CONFIG.requestLabel)}&state=open&sort=created&direction=desc&per_page=30`;
-    const res = await fetch(url, {
-      headers: { Accept: "application/vnd.github+json" },
+    // read through the relay: it is authenticated, so visitors never
+    // run into GitHub's limit for anonymous requests
+    const res = await fetch(`${CONFIG.submitUrl}/ideas?site=${encodeURIComponent(CONFIG.site)}`, {
       cache: "no-store"
     });
-    if (!res.ok) throw new Error("GitHub API " + res.status);
-    const issues = await res.json();
+    if (!res.ok) throw new Error("relay " + res.status);
+    const { ideas } = await res.json();
 
-    const requests = issues
-      .filter((i) => !i.pull_request)
-      .map((i) => {
-        let body = i.body || "";
-        let author = i.user ? i.user.login : "anonymous";
-        const m = body.match(/\n*-{3,}\nSubmitted by: (.+?) \(via the idea box\)\s*$/);
-        if (m) {
-          author = m[1];
-          body = body.slice(0, m.index);
-        }
-        return { body: body.trim(), author };
-      });
-
-    if (!requests.length) {
+    if (!ideas.length) {
       status.textContent = "No requests yet. The floor is yours.";
       return;
     }
     grid.innerHTML = "";
-    for (const r of requests) {
-      grid.appendChild(requestCard(r.body, r.author));
+    for (const r of ideas) {
+      grid.appendChild(requestCard(r.text, r.author));
     }
   } catch (err) {
     status.textContent = "Could not load requests right now.";
