@@ -24,6 +24,7 @@
       <a href="#months">Progress</a>
       <a href="#documents">Documents</a>
       <a href="#billing">Billing</a>
+      <a href="#requests">Requests</a>
     </nav>
   </header>
 
@@ -88,6 +89,37 @@
           </thead>
           <tbody id="invoice-rows"></tbody>
         </table>
+      </div>
+    </section>
+    <!-- ============ REQUESTS ============ -->
+    <section id="requests" class="section">
+      <div class="section-head">
+        <h2>Ideas &amp; Requests</h2>
+      </div>
+      <p class="section-lede">
+        Something you want us to film? A dish, an event, a promo? Drop it here
+        and it goes straight into our planning.
+      </p>
+
+      <form id="request-form" class="request-form" hidden>
+        <label class="field">
+          <span>Your request</span>
+          <textarea id="request-text" rows="3" maxlength="1000" required
+            placeholder="Example: we launch a new lunch menu on the 15th, can we tease it in a reel?"></textarea>
+        </label>
+        <div class="request-form-row">
+          <label class="field">
+            <span>Your name (optional)</span>
+            <input id="request-name" type="text" maxlength="60" placeholder="Who is asking?">
+          </label>
+          <button type="submit" class="btn-send" id="request-submit">Send</button>
+        </div>
+        <input type="text" id="request-website" name="website" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <p class="form-msg" id="request-msg" role="status"></p>
+      </form>
+
+      <div class="request-grid" id="request-grid">
+        <p class="muted" id="request-status">Loading requests...</p>
       </div>
     </section>
   </main>

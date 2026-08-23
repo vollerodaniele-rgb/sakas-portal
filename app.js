@@ -5,7 +5,11 @@
    ------------------------------------------------------------ */
 const CONFIG = {
   owner: "vollerodaniele-rgb",
-  repo: "sakas-portal"
+  repo: "sakas-portal",
+  requestLabel: "idea",
+  // shared relay, same one the Kresha idea box uses
+  submitUrl: "https://kresha-idea-box.vollerodaniele.workers.dev",
+  site: "sakas"
 };
 
 const $ = (id) => document.getElementById(id);
@@ -39,6 +43,101 @@ async function loadPlan() {
     edit.href = `https://github.com/${CONFIG.owner}/${CONFIG.repo}/edit/main/data/plan.json`;
     edit.hidden = false;
   }
+
+  loadRequests();
+  if (CONFIG.submitUrl) setupRequestForm();
+}
+
+/* ============ IDEAS & REQUESTS ============ */
+
+async function loadRequests() {
+  const grid = $("request-grid");
+  const status = $("request-status");
+  try {
+    const url = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/issues` +
+      `?labels=${encodeURIComponent(CONFIG.requestLabel)}&state=open&sort=created&direction=desc&per_page=30`;
+    const res = await fetch(url, { headers: { Accept: "application/vnd.github+json" } });
+    if (!res.ok) throw new Error("GitHub API " + res.status);
+    const issues = await res.json();
+
+    const requests = issues
+      .filter((i) => !i.pull_request)
+      .map((i) => {
+        let body = i.body || "";
+        let author = i.user ? i.user.login : "anonymous";
+        const m = body.match(/\n*-{3,}\nSubmitted by: (.+?) \(via the idea box\)\s*$/);
+        if (m) {
+          author = m[1];
+          body = body.slice(0, m.index);
+        }
+        return { body: body.trim(), author };
+      });
+
+    if (!requests.length) {
+      status.textContent = "No requests yet. The floor is yours.";
+      return;
+    }
+    grid.innerHTML = "";
+    for (const r of requests) {
+      grid.appendChild(requestCard(r.body, r.author));
+    }
+  } catch (err) {
+    status.textContent = "Could not load requests right now.";
+    console.error("requests load failed:", err);
+  }
+}
+
+function requestCard(text, author) {
+  const card = document.createElement("article");
+  card.className = "request-card";
+  card.innerHTML = `
+    <p class="request-body">${esc(text.slice(0, 300))}</p>
+    <p class="request-meta">from ${esc(author)}</p>
+  `;
+  return card;
+}
+
+function setupRequestForm() {
+  const form = $("request-form");
+  form.hidden = false;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const msg = $("request-msg");
+    const btn = $("request-submit");
+    const idea = $("request-text").value.trim();
+    const name = $("request-name").value.trim();
+
+    if (idea.length < 10) {
+      msg.textContent = "Give it a few more words (at least 10 characters).";
+      return;
+    }
+
+    btn.disabled = true;
+    msg.textContent = "Sending...";
+
+    try {
+      const res = await fetch(CONFIG.submitUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ site: CONFIG.site, idea, name, website: $("request-website").value })
+      });
+      if (!res.ok) throw new Error("relay " + res.status);
+
+      msg.textContent = "Received! It is in our planning now.";
+      form.reset();
+
+      const grid = $("request-grid");
+      const status = $("request-status");
+      if (status) status.remove();
+      grid.prepend(requestCard(idea, name || "anonymous"));
+    } catch (err) {
+      console.error("request submit failed:", err);
+      msg.textContent = "Could not send right now. Try again in a minute.";
+    } finally {
+      btn.disabled = false;
+    }
+  });
 }
 
 function renderDeal(tiles) {
