@@ -13,14 +13,10 @@
     {
       "num": "1 week",
       "label": "Delivery after shoot"
-    },
-    {
-      "num": "",
-      "label": "Strategy plan"
     }
   ],
   "nextShoot": {
-    "date": "2026-88-99",
+    "date": "2026-09-01",
     "time": "14:00",
     "location": "Sakas, Gent",
     "focus": "First shoot of the partnership",
@@ -122,7 +118,7 @@
       "number": "2026-SAK-1005",
       "period": "September 2026",
       "issued": "2026-07-06",
-      "status": "upcoming",
+      "status": "paid",
       "url": ""
     }
   ],
