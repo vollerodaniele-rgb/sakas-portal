@@ -103,6 +103,21 @@ function render() {
     body.appendChild(textField("Notes", m, "notes", true));
   }));
 
+  if (!plan.posts) plan.posts = [];
+  app.appendChild(listPanel("Posting schedule", plan.posts, () => ({
+    date: "", time: "", platform: "Instagram Reel", title: "", caption: "", status: "planned"
+  }), (post, body) => {
+    body.appendChild(row(
+      textField("Date (YYYY-MM-DD)", post, "date"),
+      textField("Time", post, "time"),
+      selectField("Where", post, "platform",
+        ["Instagram Reel", "Instagram Photo", "Carousel", "Story", "TikTok", "Facebook", "Other"]),
+      selectField("Status", post, "status", ["planned", "posted"])
+    ));
+    body.appendChild(textField("What goes out", post, "title"));
+    body.appendChild(textField("Caption", post, "caption", true));
+  }));
+
   app.appendChild(listPanel("Documents & deliveries", plan.documents, () => ({
     type: "Delivery", title: "", note: "", url: ""
   }), (doc, body) => {
