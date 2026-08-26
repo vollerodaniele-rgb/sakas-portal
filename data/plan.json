@@ -7,17 +7,17 @@
       "label": "Reels per month"
     },
     {
-      "num": "10-20",
+      "num": "10-25",
       "label": "Photos per month"
     },
     {
-      "num": "1 week",
+      "num": "10 Days",
       "label": "Delivery after shoot"
     }
   ],
   "nextShoot": {
-    "date": "2026-09-01",
-    "time": "14:00",
+    "date": "2026-08-31",
+    "time": "10:00",
     "location": "Sakas, Gent",
     "focus": "First shoot of the partnership",
     "checklist": [
@@ -62,22 +62,9 @@
       },
       "photos": {
         "done": 0,
-        "total": 20
+        "total": 15
       },
       "notes": "First month of the partnership. Focus: introducing the kitchen and the team."
-    },
-    {
-      "label": "October 2026",
-      "status": "planned",
-      "reels": {
-        "done": 0,
-        "total": 12
-      },
-      "photos": {
-        "done": 0,
-        "total": 20
-      },
-      "notes": "Autumn menu launch content."
     },
     {
       "label": "November 2026",
@@ -88,24 +75,25 @@
       },
       "photos": {
         "done": 0,
-        "total": 20
+        "total": 15
+      },
+      "notes": "planning kaitai"
+    },
+    {
+      "label": "January 2027",
+      "status": "planned",
+      "reels": {
+        "done": 0,
+        "total": 12
+      },
+      "photos": {
+        "done": 0,
+        "total": 15
       },
       "notes": "Holiday season teasers and gift card push."
     }
   ],
   "documents": [
-    {
-      "type": "Contract",
-      "title": "Collaboration agreement",
-      "note": "Signed August 2026",
-      "url": ""
-    },
-    {
-      "type": "Brief",
-      "title": "Content style guide",
-      "note": "Tone, colors, do's and don'ts",
-      "url": ""
-    },
     {
       "type": "Delivery",
       "title": "September content package",
@@ -119,6 +107,13 @@
       "period": "September 2026",
       "issued": "2026-07-06",
       "status": "paid",
+      "url": ""
+    },
+    {
+      "number": "second half",
+      "period": "Septomber 2026",
+      "issued": "",
+      "status": "upcoming",
       "url": ""
     }
   ],
