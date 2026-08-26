@@ -118,6 +118,8 @@ function render() {
     body.appendChild(textField("Caption", post, "caption", true));
   }));
 
+  app.appendChild(importPanel());
+
   app.appendChild(listPanel("Documents & deliveries", plan.documents, () => ({
     type: "Delivery", title: "", note: "", url: ""
   }), (doc, body) => {
@@ -153,6 +155,184 @@ function render() {
       textField("Email", plan.contact, "email")
     ));
   }));
+}
+
+/* ============ IMPORT A WRITTEN PLAN ============ */
+/* Paste a month of posts as text and let it fill the schedule,
+   instead of typing every row by hand. */
+
+const IMPORT_SHAPE =
+  "2026-09-12 | 18:00 | Instagram Reel | Signature dish reel\n" +
+  "The one everybody comes back for.\n" +
+  "#sakas #gent\n" +
+  "\n" +
+  "2026-09-15 | 12:30 | Instagram Photo | Lunch set, window light\n" +
+  "Midday at Sakas. Window seat, short break, long lunch.";
+
+function importPanel() {
+  return panel("Import a plan", (body) => {
+    const help = document.createElement("p");
+    help.className = "muted";
+    help.style.cssText = "font-size:0.9rem;margin-bottom:0.8rem";
+    help.textContent = "Paste a written plan and it fills the schedule above. " +
+      "One post per block, blank line between posts. First line is " +
+      "date | time | where | what, the lines under it are the caption.";
+    body.appendChild(help);
+
+    const example = document.createElement("pre");
+    example.style.cssText = "font-size:0.78rem;color:var(--dim);border:1px solid var(--line-soft);" +
+      "border-radius:8px;padding:0.8rem;overflow-x:auto;margin-bottom:1rem;white-space:pre-wrap";
+    example.textContent = IMPORT_SHAPE;
+    body.appendChild(example);
+
+    const ta = document.createElement("textarea");
+    ta.id = "import-text";
+    ta.rows = 8;
+    ta.placeholder = "Paste the plan here...";
+    ta.style.cssText = "width:100%;background:var(--bg);border:1px solid var(--line);" +
+      "border-radius:8px;color:var(--text);font-family:var(--font-body);font-size:0.9rem;padding:0.7rem 0.9rem";
+    body.appendChild(ta);
+
+    const controls = document.createElement("div");
+    controls.className = "row";
+    controls.style.marginTop = "0.8rem";
+
+    const read = document.createElement("button");
+    read.className = "btn-mini";
+    read.textContent = "Read it";
+
+    const add = document.createElement("button");
+    add.className = "btn-mini";
+    add.textContent = "Add to schedule";
+    add.hidden = true;
+
+    controls.append(read, add);
+    body.appendChild(controls);
+
+    const msg = document.createElement("p");
+    msg.className = "form-msg";
+    msg.style.marginTop = "0.7rem";
+    body.appendChild(msg);
+
+    let found = [];
+
+    read.addEventListener("click", () => {
+      found = parsePlan(ta.value);
+      if (!found.length) {
+        msg.textContent = "Could not find any posts. Check that each block starts with a date.";
+        add.hidden = true;
+        return;
+      }
+      msg.innerHTML = `Found ${found.length} post${found.length === 1 ? "" : "s"}. ` +
+        `They land in the schedule above, where you can read the captions before publishing.<br>` +
+        found.map((p) => `<span class="muted">${p.date}${p.time ? " " + p.time : ""} &middot; ${escHtml(p.title)}</span>`).join("<br>");
+      add.hidden = false;
+    });
+
+    add.addEventListener("click", () => {
+      if (!found.length) return;
+      plan.posts = (plan.posts || []).concat(found);
+      plan.posts.sort((a, b) => a.date.localeCompare(b.date));
+      const n = found.length;
+      found = [];
+      ta.value = "";
+      render();
+      const note = document.querySelector(".savebar .form-msg");
+      if (note) note.textContent = `${n} post${n === 1 ? "" : "s"} added. Press Save & Publish to put them live.`;
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  });
+}
+
+/* A new post starts at every line that begins with a date. Everything
+   under it is that post's caption, blank lines and all, so a caption
+   can breathe without being read as a separate post. */
+function parsePlan(text) {
+  const posts = [];
+  let current = null;
+
+  for (const raw of String(text).split("\n")) {
+    const head = stripDecoration(raw);
+    const parsed = head ? parseHeader(head) : null;
+
+    if (parsed) {
+      if (current) posts.push(finish(current));
+      current = { ...parsed, lines: [] };
+    } else if (current) {
+      current.lines.push(raw.trim());
+    }
+  }
+  if (current) posts.push(finish(current));
+
+  return posts;
+}
+
+// bullets, list numbering and bold markers, without touching the date
+function stripDecoration(line) {
+  return line
+    .replace(/^[\s\-*#>]+/, "")
+    .replace(/^\d{1,2}[.)]\s+/, "")
+    .replace(/\*\*/g, "")
+    .trim();
+}
+
+function parseHeader(head) {
+  let date = "", time = "", platform = "", title = "";
+
+  if (head.includes("|")) {
+    const parts = head.split("|").map((p) => p.trim()).filter(Boolean);
+    date = normalizeDate(parts.shift());
+    if (!date) return null;
+    if (parts.length && isTime(parts[0])) time = tidyTime(parts.shift());
+    if (parts.length > 1) platform = parts.shift();
+    title = parts.join(" ");
+  } else {
+    const m = head.match(/^(\S+)[\s,:-]+(.*)$/);
+    if (!m) return null;
+    date = normalizeDate(m[1]);
+    if (!date) return null;
+    let rest = m[2].trim();
+    const t = rest.match(/^(\d{1,2}[:.h]\d{2})\s*[-,|]?\s*(.*)$/);
+    if (t) { time = tidyTime(t[1]); rest = t[2]; }
+    title = rest;
+  }
+
+  return { date, time, platform: platform || "Instagram Reel", title: title || "Untitled" };
+}
+
+function isTime(s) { return /^\d{1,2}[:.h]\d{2}$/.test(s); }
+function tidyTime(s) { return s.replace(/[.h]/, ":"); }
+
+function finish(p) {
+  return {
+    date: p.date,
+    time: p.time,
+    platform: p.platform,
+    title: p.title,
+    caption: p.lines.join("\n").replace(/^\n+|\n+$/g, ""),
+    status: "planned"
+  };
+}
+
+function normalizeDate(raw) {
+  const s = String(raw || "").trim();
+  const pad = (n) => String(n).padStart(2, "0");
+  const thisYear = new Date().getFullYear();
+
+  let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (m) return `${m[1]}-${pad(m[2])}-${pad(m[3])}`;
+
+  // day first, the European way: 12/09/2026 or 12-09-26
+  m = s.match(/^(\d{1,2})[/.-](\d{1,2})[/.-](\d{2,4})$/);
+  if (m) {
+    const year = m[3].length === 2 ? "20" + m[3] : m[3];
+    return `${year}-${pad(m[2])}-${pad(m[1])}`;
+  }
+
+  m = s.match(/^(\d{1,2})[/.-](\d{1,2})$/);
+  if (m) return `${thisYear}-${pad(m[2])}-${pad(m[1])}`;
+
+  return "";
 }
 
 /* ============ IDEAS & REQUESTS ============ */
@@ -462,4 +642,10 @@ async function save() {
   } finally {
     btn.disabled = false;
   }
+}
+
+function escHtml(s) {
+  const div = document.createElement("div");
+  div.textContent = s == null ? "" : String(s);
+  return div.innerHTML;
 }
