@@ -145,12 +145,181 @@ function render() {
     ));
   }));
 
+  app.appendChild(requestsPanel());
+
   app.appendChild(panel("Contact footer", (body) => {
     body.appendChild(row(
       textField("Footer line", plan.contact, "line"),
       textField("Email", plan.contact, "email")
     ));
   }));
+}
+
+/* ============ IDEAS & REQUESTS ============ */
+/* These are GitHub issues, not part of plan.json, so this panel acts
+   on GitHub straight away. Nothing here waits for Save & Publish. */
+
+function requestsPanel() {
+  const box = panel("Ideas & requests", (body) => {
+    const note = document.createElement("p");
+    note.className = "muted";
+    note.style.cssText = "font-size:0.9rem;margin-bottom:1rem";
+    note.textContent = "Removing takes a request off the portal immediately. " +
+      "It is not deleted, so you can put it back.";
+    body.appendChild(note);
+
+    const msg = document.createElement("p");
+    msg.className = "form-msg";
+    msg.id = "req-msg";
+    body.appendChild(msg);
+
+    const list = document.createElement("div");
+    list.id = "req-list";
+    list.innerHTML = '<p class="muted" style="font-size:0.9rem">Loading requests...</p>';
+    body.appendChild(list);
+
+    const toggle = document.createElement("button");
+    toggle.className = "btn-mini";
+    toggle.textContent = "Show removed";
+    body.appendChild(toggle);
+
+    const removed = document.createElement("div");
+    removed.id = "req-removed";
+    removed.hidden = true;
+    removed.style.marginTop = "1rem";
+    body.appendChild(removed);
+
+    toggle.addEventListener("click", () => {
+      removed.hidden = !removed.hidden;
+      toggle.textContent = removed.hidden ? "Show removed" : "Hide removed";
+    });
+  });
+
+  loadRequests();
+  return box;
+}
+
+async function loadRequests() {
+  try {
+    const [open, closed] = await Promise.all([fetchRequests("open"), fetchRequests("closed")]);
+    drawRequests($("req-list"), open, false);
+    drawRequests($("req-removed"), closed, true);
+  } catch (err) {
+    console.error("requests load failed:", err);
+    const list = $("req-list");
+    if (list) list.innerHTML = '<p class="muted" style="font-size:0.9rem">Could not load requests.</p>';
+  }
+}
+
+async function fetchRequests(state) {
+  const url = `https://api.github.com/repos/${OWNER}/${REPO}/issues` +
+    `?labels=idea&state=${state}&sort=created&direction=desc&per_page=100`;
+  const headers = { Accept: "application/vnd.github+json" };
+  const t = localStorage.getItem(TOKEN_KEY);
+  if (t) headers.Authorization = "Bearer " + t;
+
+  const res = await fetch(url, { headers, cache: "no-store" });
+  if (!res.ok) throw new Error("GitHub API " + res.status);
+
+  return (await res.json()).filter((i) => !i.pull_request).map((i) => {
+    let body = i.body || "";
+    let author = i.user ? i.user.login : "anonymous";
+    const m = body.match(/\n*-{3,}\nSubmitted by: (.+?) \(via the idea box\)\s*$/);
+    if (m) { author = m[1]; body = body.slice(0, m.index); }
+    return {
+      number: i.number,
+      text: body.trim() || i.title.replace(/^Idea:\s*/, ""),
+      author,
+      date: new Date(i.created_at).toLocaleDateString("en-GB",
+        { day: "numeric", month: "short", year: "numeric" })
+    };
+  });
+}
+
+function drawRequests(wrap, items, isRemoved) {
+  if (!wrap) return;
+  wrap.innerHTML = "";
+
+  if (!items.length) {
+    const p = document.createElement("p");
+    p.className = "muted";
+    p.style.fontSize = "0.9rem";
+    p.textContent = isRemoved ? "Nothing removed yet." : "No requests yet.";
+    wrap.appendChild(p);
+    return;
+  }
+
+  for (const item of items) {
+    const el = document.createElement("div");
+    el.className = "item";
+
+    const btn = document.createElement("button");
+    btn.className = "btn-mini remove" + (isRemoved ? "" : " danger");
+    btn.textContent = isRemoved ? "Restore" : "Remove";
+
+    let armed = false;
+    btn.addEventListener("click", async () => {
+      if (!isRemoved && !armed) {
+        armed = true;
+        btn.textContent = "Sure?";
+        setTimeout(() => { if (armed) { armed = false; btn.textContent = "Remove"; } }, 4000);
+        return;
+      }
+      await setRequestState(item, isRemoved ? "open" : "closed", btn);
+    });
+
+    const p = document.createElement("p");
+    p.style.cssText = "font-size:0.92rem;padding-right:6rem";
+    p.textContent = item.text.slice(0, 300);
+
+    const meta = document.createElement("p");
+    meta.className = "muted";
+    meta.style.cssText = "font-size:0.78rem;margin-top:0.4rem";
+    meta.textContent = `from ${item.author} · ${item.date}`;
+
+    el.append(btn, p, meta);
+    wrap.appendChild(el);
+  }
+}
+
+async function setRequestState(item, state, btn) {
+  const msg = $("req-msg");
+  const token = localStorage.getItem(TOKEN_KEY);
+
+  if (!token) {
+    msg.textContent = "Save your access key first (top of the page).";
+    btn.textContent = state === "closed" ? "Remove" : "Restore";
+    return;
+  }
+
+  btn.disabled = true;
+  msg.textContent = state === "closed" ? "Removing..." : "Restoring...";
+
+  try {
+    const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/issues/${item.number}`, {
+      method: "PATCH",
+      headers: {
+        "Authorization": "Bearer " + token,
+        "Accept": "application/vnd.github+json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ state })
+    });
+    if (!res.ok) throw new Error(String(res.status));
+
+    msg.textContent = state === "closed"
+      ? "Removed from the portal."
+      : "Back on the portal.";
+    await loadRequests();
+  } catch (err) {
+    console.error("request state change failed:", err);
+    const code = String(err.message);
+    msg.textContent = "Could not do that (error " + code + ")" +
+      (code === "403" || code === "401"
+        ? ": this key needs Issues read and write on this repo, on top of Contents."
+        : ".");
+    btn.disabled = false;
+  }
 }
 
 function panel(title, fill) {
