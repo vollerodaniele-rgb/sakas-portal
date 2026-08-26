@@ -121,38 +121,5 @@
     "line": "SAKAS x NOIR AU NOIR",
     "email": "info@noiraunoir.com"
   },
-  "posts": [
-    {
-      "date": "2026-09-12",
-      "time": "18:00",
-      "platform": "Instagram Reel",
-      "title": "Signature dish reel",
-      "status": "planned",
-      "caption": "The one everybody comes back for. Booked or walk in, this plate does not wait.\n\n#sakas #gent #restaurant"
-    },
-    {
-      "date": "2026-09-15",
-      "time": "12:30",
-      "platform": "Instagram Photo",
-      "title": "Lunch set, window light",
-      "status": "planned",
-      "caption": "Midday at Sakas. Window seat, short break, long lunch.\n\n#gent #lunchgent #sakas"
-    },
-    {
-      "date": "2026-09-18",
-      "time": "19:00",
-      "platform": "Instagram Reel",
-      "title": "Kitchen action, evening service",
-      "status": "planned",
-      "caption": "Seven o clock. The pass fills, the room fills, nobody rushes.\n\n#kitchenlife #gent #sakas"
-    },
-    {
-      "date": "2026-09-22",
-      "time": "11:00",
-      "platform": "Story",
-      "title": "Behind the bar",
-      "status": "planned",
-      "caption": "A short look at how the morning starts here."
-    }
-  ]
+  "posts": []
 }
