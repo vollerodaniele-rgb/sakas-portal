@@ -380,25 +380,53 @@ function requestsPanel() {
 }
 
 async function loadRequests() {
+  requestKeyRejected = false;
   try {
     const [open, closed] = await Promise.all([fetchRequests("open"), fetchRequests("closed")]);
     drawRequests($("req-list"), open, false);
     drawRequests($("req-removed"), closed, true);
+    const msg = $("req-msg");
+    if (msg) {
+      msg.textContent = requestKeyRejected
+        ? "GitHub refused the saved key, so this list is read only. Paste a fresh key at the top of the page."
+        : "";
+    }
   } catch (err) {
     console.error("requests load failed:", err);
     const list = $("req-list");
-    if (list) list.innerHTML = '<p class="muted" style="font-size:0.9rem">Could not load requests.</p>';
+    if (list) {
+      list.innerHTML = '<p class="muted" style="font-size:0.9rem">Could not load requests (' +
+        err.message + ').</p>';
+    }
   }
 }
+
+let requestKeyRejected = false;
 
 async function fetchRequests(state) {
   const url = `https://api.github.com/repos/${OWNER}/${REPO}/issues` +
     `?labels=idea&state=${state}&sort=created&direction=desc&per_page=100`;
-  const headers = { Accept: "application/vnd.github+json" };
-  const t = localStorage.getItem(TOKEN_KEY);
-  if (t) headers.Authorization = "Bearer " + t;
 
-  const res = await fetch(url, { headers, cache: "no-store" });
+  const t = localStorage.getItem(TOKEN_KEY);
+  let res = null;
+
+  if (t) {
+    res = await fetch(url, {
+      headers: { Accept: "application/vnd.github+json", Authorization: "Bearer " + t },
+      cache: "no-store"
+    });
+    // a stale key should not hide the requests: the repo is public,
+    // so read them without it and flag the key instead
+    if (res.status === 401 || res.status === 403) {
+      requestKeyRejected = true;
+      res = null;
+    }
+  }
+
+  if (!res) {
+    res = await fetch(url, { headers: { Accept: "application/vnd.github+json" }, cache: "no-store" });
+  }
+
   if (!res.ok) throw new Error("GitHub API " + res.status);
 
   return (await res.json()).filter((i) => !i.pull_request).map((i) => {
